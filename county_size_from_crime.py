@@ -12,9 +12,9 @@ STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "Califor
           "New Jersey", "New Mexico", "Nevada", "New York", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
           "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Virginia", "Virgin Islands",
           "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
-HIDDEN_UNITS = [10, 10, 10]
-BATCH_SIZE = 100
-STEPS = 1000
+HIDDEN_UNITS = [35]
+BATCH_SIZE = 10
+STEPS = 10000
 
 def main():
   (train_data, train_labels), (validation_data, validation_labels), (test_data, test_labels) = load_data('county_crime.csv')
@@ -26,26 +26,36 @@ def main():
       feature_cols.append(tf.feature_column.embedding_column(temp, 51))
     else:
       feature_cols.append(tf.feature_column.numeric_column(key=key))
-  pdb.set_trace()
+  # Instantiate model
   classifier = tf.estimator.DNNClassifier(feature_columns=feature_cols, hidden_units=HIDDEN_UNITS, n_classes=4)
 
+  # train model
   classifier.train(
     input_fn=lambda:train_input(train_data, train_labels),
     steps=STEPS
   )
 
-  eval_result = classifier.evaluate(input_fn=lambda:eval_input(validation_data, validation_labels))
+  # evaluate trained model
+  eval_result = classifier.evaluate(input_fn=lambda:eval_input(test_data, test_labels))
 
-  print('\nValidation set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
+  print('\nTest set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
 
-  predictions = classifier.predict(input_fn=lambda:eval_input(test_data, labels=None))
 
-  template = ('\nPredicted "{}" with probability of ({:.1f}%), correct value is "{}"')
+  predictions = classifier.predict(input_fn=lambda:eval_input(validation_data, labels=None))
+
+  # template = ('\nPredicted "{}" with probability of ({:.1f}%), correct value is "{}"')
+  swings = 0
+  hits = 0
+
   for guess, correct in zip(predictions, train_labels):
+    swings += 1
     class_id = guess['class_ids'][0]
     prob = guess['probabilities'][class_id]
+    if(class_id == correct and prob > .7):
+      hits += 1
 
-    print(template.format(class_id, prob, correct))
+    # print(template.format(class_id, prob, correct))
+  print '\nValidation set accuracy: ' + "{0:.3f}".format(float(hits)/swings * 100) + '%\n'
 
   print "Success...ish"
 
@@ -87,5 +97,6 @@ def eval_input(features, labels, batch_size=BATCH_SIZE):
   return dataset
 
 if __name__ == '__main__':
+  tf.logging.set_verbosity(tf.logging.INFO)
   main()
 
