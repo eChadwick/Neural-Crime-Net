@@ -2,7 +2,6 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import pdb
-# pdb.set_trace()
 import math
 
 STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "California", "Colorado", "Connecticut",
@@ -12,12 +11,16 @@ STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "Califor
           "New Jersey", "New Mexico", "Nevada", "New York", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
           "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Virginia", "Virgin Islands",
           "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
-HIDDEN_UNITS = [35]
+
+# Options to passed to classifier.  Set globally for ease of adjustment.
+HIDDEN_UNITS = [10]
 BATCH_SIZE = 10
 STEPS = 10000
 
 def main():
+
   (train_data, train_labels), (validation_data, validation_labels), (test_data, test_labels) = load_data('county_crime.csv')
+
   # Create feature columns
   feature_cols = []
   for key in train_data.keys():
@@ -26,6 +29,7 @@ def main():
       feature_cols.append(tf.feature_column.embedding_column(temp, 51))
     else:
       feature_cols.append(tf.feature_column.numeric_column(key=key))
+
   # Instantiate model
   classifier = tf.estimator.DNNClassifier(feature_columns=feature_cols, hidden_units=HIDDEN_UNITS, n_classes=4)
 
@@ -37,16 +41,14 @@ def main():
 
   # evaluate trained model
   eval_result = classifier.evaluate(input_fn=lambda:eval_input(test_data, test_labels))
+  print('\nTest set accuracy: {accuracy:0.2f}%\n'.format(**eval_result))
 
-  print('\nTest set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
-
-
+  # make some predictions
   predictions = classifier.predict(input_fn=lambda:eval_input(validation_data, labels=None))
 
-  # template = ('\nPredicted "{}" with probability of ({:.1f}%), correct value is "{}"')
+  # tally percentage of correct predictions
   swings = 0
   hits = 0
-
   for guess, correct in zip(predictions, train_labels):
     swings += 1
     class_id = guess['class_ids'][0]
@@ -54,28 +56,36 @@ def main():
     if(class_id == correct and prob > .7):
       hits += 1
 
-    # print(template.format(class_id, prob, correct))
-  print '\nValidation set accuracy: ' + "{0:.3f}".format(float(hits)/swings * 100) + '%\n'
 
-  print "Success...ish"
-
+  print '\nValidation set accuracy: ' + "{0:.2f}".format(float(hits)/swings * 100) + '%\n'
+# end main
 
 
 def load_data(path):
+  # load data and drop undesired columns
   working_frame = pd.read_csv(path)
   working_frame.drop(['Department', 'Year', 'Population', 'Randomizer'], axis = 1, inplace = True)
+
+  # randomize the rows
+  working_frame = working_frame.reindex(np.random.permutation(working_frame.index))
+
+  # calulate how records is 15% of total records
   fifteen_percent = int(math.floor(working_frame.shape[0] * .15))
 
+  # pare off 15% of records for testing
   test_data = working_frame.head(fifteen_percent)
   working_frame.drop(working_frame.index[:fifteen_percent], inplace=True)
 
+  # pare off 15% of records for validation
   validation_data = working_frame.head(fifteen_percent)
   working_frame.drop(working_frame.index[:fifteen_percent], inplace=True)
 
+  # pop off the Pop_Quartile column from each dataset to be its label
   test_label = test_data.pop('Pop_Quartile')
   validation_label = validation_data.pop('Pop_Quartile')
   training_label = working_frame.pop('Pop_Quartile')
 
+  # return 3 pairs formatted as (features, labels)
   return (working_frame, training_label), (validation_data, validation_label), (test_data, test_label)
 
 def train_input(features, labels, batch_size=BATCH_SIZE):
