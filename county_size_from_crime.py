@@ -31,7 +31,11 @@ def main():
       feature_cols.append(tf.feature_column.numeric_column(key=key))
 
   # Instantiate model
-  classifier = tf.estimator.DNNClassifier(feature_columns=feature_cols, hidden_units=HIDDEN_UNITS, n_classes=4)
+  classifier = tf.estimator.DNNClassifier(
+    feature_columns=feature_cols,
+    hidden_units=HIDDEN_UNITS,
+    n_classes=4
+  )
 
   # train model
   classifier.train(
