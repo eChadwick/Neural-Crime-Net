@@ -13,9 +13,9 @@ STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "Califor
           "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
 
 # Options to passed to classifier.  Set globally for ease of adjustment.
-HIDDEN_UNITS = [19,10,5,5]
+HIDDEN_UNITS = [300,200,100,50]
 BATCH_SIZE = 10
-STEPS = 8000
+STEPS = 1000
 
 def main():
 
