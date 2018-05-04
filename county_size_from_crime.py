@@ -19,7 +19,7 @@ STEPS = 10000
 
 def main():
 
-  (train_data, train_labels), (validation_data, validation_labels), (test_data, test_labels) = load_data('county_crime.csv')
+  (train_data, train_labels), (validation_data, validation_labels), (test_data, test_labels) = load_data('county_crime_modified.csv')
 
   # Create feature columns
   feature_cols = []
