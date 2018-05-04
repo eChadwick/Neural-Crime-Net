@@ -15,7 +15,7 @@ STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "Califor
 # Options to passed to classifier.  Set globally for ease of adjustment.
 HIDDEN_UNITS = [300,200,300,50]
 BATCH_SIZE = 10
-STEPS = 20000
+NUM_EPOCHS = 10
 
 def main():
 
@@ -41,7 +41,6 @@ def main():
   # train model
   classifier.train(
     input_fn=lambda:train_input(train_data, train_labels),
-    steps=STEPS
   )
 
   # evaluate trained model
@@ -95,7 +94,7 @@ def load_data(path):
 
 def train_input(features, labels, batch_size=BATCH_SIZE):
   dataset = tf.data.Dataset.from_tensor_slices((dict(features), labels))
-  dataset = dataset.shuffle(100000).repeat().batch(batch_size)
+  dataset = dataset.shuffle(100000).repeat(NUM_EPOCHS).batch(batch_size)
 
   return dataset
 
