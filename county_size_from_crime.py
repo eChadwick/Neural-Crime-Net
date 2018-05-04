@@ -13,9 +13,9 @@ STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "Califor
           "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
 
 # Options to passed to classifier.  Set globally for ease of adjustment.
-HIDDEN_UNITS = [300,200,100,50]
+HIDDEN_UNITS = [300,200,300,50]
 BATCH_SIZE = 10
-STEPS = 1000
+STEPS = 20000
 
 def main():
 
@@ -35,8 +35,7 @@ def main():
     feature_columns=feature_cols,
     hidden_units=HIDDEN_UNITS,
     n_classes=4,
-    # activation_fn=tf.nn.softsign
-    # loss_reduction=tf.losses.Reduction.SUM_OVER_BATCH_SIZE
+    loss_reduction=tf.losses.Reduction.SUM_OVER_BATCH_SIZE
   )
 
   # train model
