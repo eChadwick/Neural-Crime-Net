@@ -13,9 +13,9 @@ STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "Califor
           "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
 
 # Options to passed to classifier.  Set globally for ease of adjustment.
-HIDDEN_UNITS = [10]
+HIDDEN_UNITS = [19,10,5,5]
 BATCH_SIZE = 10
-STEPS = 10000
+STEPS = 8000
 
 def main():
 
@@ -34,7 +34,9 @@ def main():
   classifier = tf.estimator.DNNClassifier(
     feature_columns=feature_cols,
     hidden_units=HIDDEN_UNITS,
-    n_classes=4
+    n_classes=4,
+    # activation_fn=tf.nn.softsign
+    # loss_reduction=tf.losses.Reduction.SUM_OVER_BATCH_SIZE
   )
 
   # train model
