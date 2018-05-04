@@ -13,10 +13,9 @@ STATES = ["Alaska", "Alabama", "Arkansas", "American Samoa", "Arizona", "Califor
           "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
 
 # Options to passed to classifier.  Set globally for ease of adjustment.
-# HIDDEN_UNITS = [1900]
 HIDDEN_UNITS = [1000, 500, 250, 125, 19, 5]
 BATCH_SIZE = 5
-NUM_EPOCHS = 2
+NUM_EPOCHS = 3
 
 def main():
 
@@ -60,7 +59,6 @@ def main():
     prob = guess['probabilities'][class_id]
     if(class_id == correct and prob > .7):
       hits += 1
-
 
   print '\nValidation set accuracy: ' + "{0:.2f}".format(float(hits)/swings * 100) + '%\n'
 # end main
